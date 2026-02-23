@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-const WS_BACKEND = "ws://127.0.0.1:8000"
+const WS_BACKEND = "wss://wavelength-production.up.railway.app"
 
 let globalSocket = null
 let globalRoomCode = null
@@ -16,13 +16,11 @@ export function useWebSocket(roomCode, playerId, playerName, onMessage) {
   useEffect(() => {
     if (!roomCode || !playerId) return
 
-    // Si ya hay un socket abierto para esta sala, no crear otro
     if (globalSocket && globalSocket.readyState === WebSocket.OPEN && globalRoomCode === roomCode) {
       setConnected(true)
       return
     }
 
-    // Cerrar socket anterior si existe
     if (globalSocket) {
       globalSocket.close()
       globalSocket = null
