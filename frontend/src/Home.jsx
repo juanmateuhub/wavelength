@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-const BACKEND = "http://127.0.0.1:8000"
+const BACKEND = "https://wavelength-production.up.railway.app"
 
 export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerId }) {
   const [name, setName] = useState("")
