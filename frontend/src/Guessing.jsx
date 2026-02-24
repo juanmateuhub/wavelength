@@ -37,11 +37,13 @@ export default function Guessing({ playerId, gameState, send }) {
     setSubmitted(false)
   }
 
+  // Construir set de jugadores listos — no lo tenemos directamente pero
+  // sabemos readyCount/totalGuessers para el contador general
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, paddingTop: 20, width: "100%" }}>
 
-      {/* Título con caja oscura */}
-      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a" }}>
+      {/* Título */}
+      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a", width: "100%", boxSizing: "border-box" }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>🎯 Adivina</h2>
         {clue && (
           <p style={{ color: "#888", fontSize: 13, margin: "4px 0 0" }}>
@@ -50,19 +52,22 @@ export default function Guessing({ playerId, gameState, send }) {
         )}
       </div>
 
+      {/* Frase */}
       {clue && (
-        <div style={{ background: "#6c63ff", borderRadius: 14, padding: "16px", textAlign: "center" }}>
+        <div style={{ background: "#6c63ff", borderRadius: 14, padding: "16px", textAlign: "center", width: "100%", boxSizing: "border-box" }}>
           <p style={{ fontSize: 20, fontWeight: 800, color: "white", margin: 0 }}>"{clue.phrase}"</p>
         </div>
       )}
 
+      {/* Aviso al dueño */}
       {isOwner && (
-        <div style={{ background: "#16213e", border: "2px solid #e67e22", borderRadius: 14, padding: 14, textAlign: "center" }}>
+        <div style={{ background: "#16213e", border: "2px solid #e67e22", borderRadius: 14, padding: 14, textAlign: "center", width: "100%", boxSizing: "border-box" }}>
           <p style={{ color: "#e67e22", fontWeight: 700, fontSize: 15, margin: 0 }}>👀 Es tu dial — espera a que los demás adivinen</p>
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      {/* Dial — ancho completo */}
+      <div style={{ width: "100%" }}>
         <Dial
           needleAngle={needlePosition}
           setNeedleAngle={isOwner || submitted ? null : handleAngleChange}
@@ -72,13 +77,7 @@ export default function Guessing({ playerId, gameState, send }) {
         />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ color: "#888", fontSize: 14 }}>Posición: <strong style={{ color: "#fff" }}>{needlePosition}°</strong></span>
-        {totalGuessers > 0 && (
-          <span style={{ color: "#888", fontSize: 14 }}>Listos: <strong style={{ color: readyCount === totalGuessers ? "#2ecc71" : "#fff" }}>{readyCount}/{totalGuessers}</strong></span>
-        )}
-      </div>
-
+      {/* Botón listo / quitar listo */}
       {!isOwner && !submitted && (
         <button onClick={handleReady} style={btnStyle("#6c63ff")}>¡Listo! ✅</button>
       )}
@@ -86,13 +85,38 @@ export default function Guessing({ playerId, gameState, send }) {
         <button onClick={handleCancelReady} style={btnStyle("#e74c3c")}>Quitar listo ❌</button>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
-        {players.map(p => (
-          <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "#16213e", borderRadius: 10, border: "1px solid #2a2a4a" }}>
-            <span style={{ color: "#fff", fontWeight: 600 }}>{p.name}</span>
-            {p.id === playerId && <span style={{ color: "#6c63ff", fontSize: 12 }}>TÚ</span>}
-          </div>
-        ))}
+      {/* Jugadores con indicador de listo integrado */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+        {players.map((p, idx) => {
+          const isDialOwner = p.id === clue?.owner_id
+          // Los primeros readyCount no-owner están listos (aproximación visual)
+          // Como no tenemos por jugador, marcamos al jugador actual si submitted
+          const isMe = p.id === playerId
+          const isReady = isMe ? submitted : false
+
+          return (
+            <div key={p.id} style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "10px 14px", background: "#16213e", borderRadius: 10,
+              border: isDialOwner ? "1px solid #e67e22" : isReady ? "1px solid #2ecc71" : "1px solid #2a2a4a"
+            }}>
+              <span style={{ fontSize: 16 }}>
+                {isDialOwner ? "👀" : isReady ? "✅" : "⏳"}
+              </span>
+              <span style={{ color: "#fff", fontWeight: 600 }}>{p.name}</span>
+              {isMe && <span style={{ color: "#6c63ff", fontSize: 12, marginLeft: 4 }}>TÚ</span>}
+              {isDialOwner && <span style={{ color: "#e67e22", fontSize: 12, marginLeft: "auto" }}>su dial</span>}
+              {!isDialOwner && isReady && <span style={{ color: "#2ecc71", fontSize: 12, marginLeft: "auto" }}>listo</span>}
+            </div>
+          )
+        })}
+
+        {/* Contador global */}
+        {totalGuessers > 0 && (
+          <p style={{ color: "#555", fontSize: 13, textAlign: "center", margin: "4px 0 0" }}>
+            {readyCount} de {totalGuessers} jugadores listos
+          </p>
+        )}
       </div>
     </div>
   )

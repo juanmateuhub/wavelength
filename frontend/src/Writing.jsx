@@ -7,7 +7,6 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const [rightAdj, setRightAdj] = useState("")
   const [waitingForNext, setWaitingForNext] = useState(false)
 
-  // Rastrear el último clueNumber que hemos mostrado
   const lastClueNumberRef = useRef(null)
 
   const targetPosition = gameState?.target_position
@@ -16,21 +15,17 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const mode = gameState?.mode || "free"
   const serverLeftAdj = gameState?.left_adjective
   const serverRightAdj = gameState?.right_adjective
-  const players = gameState?.players || []
 
   const isBattery = mode === "battery"
   const displayLeft = isBattery ? (serverLeftAdj || "") : (leftAdj || "Izq")
   const displayRight = isBattery ? (serverRightAdj || "") : (rightAdj || "Der")
 
-  // Cuando llega un nuevo dial (clueNumber cambia), resetear el formulario
   useEffect(() => {
     if (lastClueNumberRef.current === null) {
-      // Primera carga — solo registrar
       lastClueNumberRef.current = clueNumber
       return
     }
     if (clueNumber !== lastClueNumberRef.current) {
-      // Llegó un dial nuevo
       lastClueNumberRef.current = clueNumber
       setWaitingForNext(false)
       setPhrase("")
@@ -39,7 +34,6 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
     }
   }, [clueNumber, targetPosition])
 
-  // Resetear todo al empezar nueva partida
   useEffect(() => {
     lastClueNumberRef.current = null
     setWaitingForNext(false)
@@ -64,9 +58,10 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const allDone = waitingForNext && clueNumber >= totalClues
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, paddingTop: 24, width: "100%" }}>
 
-      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a" }}>
+      {/* Título */}
+      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a", width: "100%", boxSizing: "border-box" }}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>✍️ Escribe tu pista</h2>
         <p style={{ color: "#888", fontSize: 13, margin: "4px 0 0" }}>
           Dial {clueNumber} de {totalClues} — solo tú ves tu posición
@@ -81,18 +76,8 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
         </div>
       </div>
 
-      {isBattery && serverLeftAdj && (
-        <div style={{ background: "#16213e", borderRadius: 12, padding: "12px 16px", border: "1px solid #2a2a4a", textAlign: "center" }}>
-          <p style={{ color: "#aaa", fontSize: 12, textTransform: "uppercase", letterSpacing: 1, margin: "0 0 6px" }}>Tus adjetivos</p>
-          <p style={{ color: "#fff", fontSize: 18, fontWeight: 700, margin: 0 }}>
-            <span style={{ color: "#6c63ff" }}>{serverLeftAdj}</span>
-            <span style={{ color: "#555", margin: "0 12px" }}>↔</span>
-            <span style={{ color: "#6c63ff" }}>{serverRightAdj}</span>
-          </p>
-        </div>
-      )}
-
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      {/* Dial — ancho completo */}
+      <div style={{ width: "100%" }}>
         {targetPosition !== undefined && targetPosition !== null
           ? <Dial
               targetPosition={targetPosition}
@@ -100,12 +85,13 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
               leftAdjective={displayLeft}
               rightAdjective={displayRight}
             />
-          : <div style={{ color: "#888", padding: 20 }}>⏳ Cargando dial...</div>
+          : <div style={{ color: "#888", padding: 20, textAlign: "center" }}>⏳ Cargando dial...</div>
         }
       </div>
 
+      {/* Formulario o espera */}
       {!waitingForNext ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
           <div>
             <label style={labelStyle}>Tu frase o palabra clave</label>
             <input
@@ -151,14 +137,14 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
               border: "none", borderRadius: 14, padding: "16px",
               fontSize: 16, fontWeight: 700,
               cursor: canSubmit ? "pointer" : "default",
-              marginTop: 4
+              width: "100%",
             }}
           >
             {clueNumber < totalClues ? "Siguiente dial ➡️" : "Enviar última pista ✅"}
           </button>
         </div>
       ) : (
-        <div style={{ background: "#16213e", borderRadius: 16, padding: 20, border: "1px solid #2a2a4a", textAlign: "center" }}>
+        <div style={{ background: "#16213e", borderRadius: 16, padding: 20, border: "1px solid #2a2a4a", textAlign: "center", width: "100%" }}>
           {allDone
             ? <p style={{ fontSize: 20, color: "#2ecc71", fontWeight: 700, margin: 0 }}>✅ ¡Todas las pistas enviadas!</p>
             : <p style={{ fontSize: 18, color: "#6c63ff", fontWeight: 700, margin: 0 }}>⏳ Cargando siguiente dial...</p>
