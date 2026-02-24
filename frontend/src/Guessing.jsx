@@ -38,7 +38,7 @@ export default function Guessing({ playerId, gameState, send }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 20, width: "100%" }}>
 
       <div style={card}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>🎯 Adivina</h2>

@@ -58,7 +58,7 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const allDone = waitingForNext && clueNumber >= totalClues
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24, width: "100%" }}>
 
       <div style={card}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>✍️ Escribe tu pista</h2>
