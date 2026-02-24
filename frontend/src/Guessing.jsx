@@ -40,7 +40,7 @@ export default function Guessing({ playerId, gameState, send }) {
   // Construir set de jugadores listos — no lo tenemos directamente pero
   // sabemos readyCount/totalGuessers para el contador general
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, paddingTop: 20, width: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 20, width: "100%", boxSizing: "border-box" }}>
 
       {/* Título */}
       <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a", width: "100%", boxSizing: "border-box" }}>
