@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Dial from "./Dial"
 
 export default function Writing({ playerId, gameState, setGameState, send }) {
@@ -6,6 +6,9 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const [leftAdj, setLeftAdj] = useState("")
   const [rightAdj, setRightAdj] = useState("")
   const [waitingForNext, setWaitingForNext] = useState(false)
+
+  // Rastrear el último clueNumber que hemos mostrado
+  const lastClueNumberRef = useRef(null)
 
   const targetPosition = gameState?.target_position
   const clueNumber = gameState?.clue_number || 1
@@ -19,26 +22,31 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const displayLeft = isBattery ? (serverLeftAdj || "") : (leftAdj || "Izq")
   const displayRight = isBattery ? (serverRightAdj || "") : (rightAdj || "Der")
 
-  // Resetear formulario cuando llega el siguiente dial
+  // Cuando llega un nuevo dial (clueNumber cambia), resetear el formulario
   useEffect(() => {
-    if (gameState?.type === "next_writing") {
+    if (lastClueNumberRef.current === null) {
+      // Primera carga — solo registrar
+      lastClueNumberRef.current = clueNumber
+      return
+    }
+    if (clueNumber !== lastClueNumberRef.current) {
+      // Llegó un dial nuevo
+      lastClueNumberRef.current = clueNumber
       setWaitingForNext(false)
       setPhrase("")
       setLeftAdj("")
       setRightAdj("")
-      setGameState(prev => ({ ...prev, type: null }))
     }
-  }, [gameState?.type])
+  }, [clueNumber, targetPosition])
 
-  // Resetear waiting cuando empieza una nueva partida
+  // Resetear todo al empezar nueva partida
   useEffect(() => {
-    if (gameState?.type === "round_started") {
-      setWaitingForNext(false)
-      setPhrase("")
-      setLeftAdj("")
-      setRightAdj("")
-    }
-  }, [gameState?.type])
+    lastClueNumberRef.current = null
+    setWaitingForNext(false)
+    setPhrase("")
+    setLeftAdj("")
+    setRightAdj("")
+  }, [gameState?.state === "writing" && gameState?.clue_number === 1 && gameState?.type === "round_started"])
 
   const canSubmit = phrase.trim() && (isBattery || (leftAdj.trim() && rightAdj.trim()))
 

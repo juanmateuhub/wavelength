@@ -14,29 +14,51 @@ function App() {
   const [gameState, setGameState] = useState({})
 
   const { send, connected } = useWebSocket(roomCode, playerId, playerName, (msg) => {
-    if (msg.type === "game_state" || msg.type === "player_joined" || msg.type === "writing_progress") {
+
+    if (msg.type === "game_state" || msg.type === "player_joined") {
       setGameState(prev => ({ ...prev, ...msg }))
     }
+
+    // writing_progress solo actualiza la lista de jugadores, NO sobreescribe el dial actual
+    if (msg.type === "writing_progress") {
+      setGameState(prev => ({ ...prev, players: msg.players }))
+    }
+
     if (msg.type === "lobby_settings") {
       setGameState(prev => ({ ...prev, ...msg }))
     }
+
     if (msg.type === "round_started") {
       setGameState(prev => ({ ...prev, ...msg }))
       setScreen("writing")
     }
+
+    // next_writing trae el nuevo dial — sobreescribir campos relevantes
     if (msg.type === "next_writing") {
-      setGameState(prev => ({ ...prev, ...msg }))
+      setGameState(prev => ({
+        ...prev,
+        target_position: msg.target_position,
+        left_adjective: msg.left_adjective,
+        right_adjective: msg.right_adjective,
+        clue_number: msg.clue_number,
+        total_clues: msg.total_clues,
+        mode: msg.mode,
+      }))
     }
+
     if (msg.type === "guessing_started") {
       setGameState(prev => ({ ...prev, ...msg, needlePosition: msg.needle_position ?? 90 }))
       setScreen("guessing")
     }
+
     if (msg.type === "needle_moved") {
       setGameState(prev => ({ ...prev, needlePosition: msg.position, needlePlayerId: msg.player_id }))
     }
+
     if (msg.type === "player_ready") {
       setGameState(prev => ({ ...prev, ...msg }))
     }
+
     if (msg.type === "clue_reveal") {
       setGameState(prev => ({
         ...prev, ...msg,
@@ -46,6 +68,7 @@ function App() {
       }))
       setScreen("reveal")
     }
+
     if (msg.type === "game_finished") {
       setGameState(prev => ({ ...prev, ...msg }))
     }
