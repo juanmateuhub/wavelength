@@ -39,10 +39,12 @@ export default function Guessing({ playerId, gameState, send }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 20 }}>
-      <div>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>🎯 Adivina</h2>
+
+      {/* Título con caja oscura */}
+      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>🎯 Adivina</h2>
         {clue && (
-          <p style={{ color: "#888", fontSize: 13, marginTop: 2 }}>
+          <p style={{ color: "#888", fontSize: 13, margin: "4px 0 0" }}>
             Dial {clue.clue_number} de {clue.total_clues} — pista de <strong style={{ color: "#aaa" }}>{clue.owner_name}</strong>
           </p>
         )}
@@ -56,7 +58,7 @@ export default function Guessing({ playerId, gameState, send }) {
 
       {isOwner && (
         <div style={{ background: "#16213e", border: "2px solid #e67e22", borderRadius: 14, padding: 14, textAlign: "center" }}>
-          <p style={{ color: "#e67e22", fontWeight: 700, fontSize: 15 }}>👀 Es tu dial — espera a que los demás adivinen</p>
+          <p style={{ color: "#e67e22", fontWeight: 700, fontSize: 15, margin: 0 }}>👀 Es tu dial — espera a que los demás adivinen</p>
         </div>
       )}
 
@@ -89,7 +91,6 @@ export default function Guessing({ playerId, gameState, send }) {
           <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "#16213e", borderRadius: 10, border: "1px solid #2a2a4a" }}>
             <span style={{ color: "#fff", fontWeight: 600 }}>{p.name}</span>
             {p.id === playerId && <span style={{ color: "#6c63ff", fontSize: 12 }}>TÚ</span>}
-            <span style={{ marginLeft: "auto", color: "#888", fontSize: 13 }}>{p.score} pts</span>
           </div>
         ))}
       </div>

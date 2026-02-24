@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 const WS_BACKEND = "wss://wavelength-production.up.railway.app"
+//const WS_BACKEND = "ws://127.0.0.1:8000"
 
 let globalSocket = null
 let globalRoomCode = null

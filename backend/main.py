@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import json
-from game import create_room, get_room
+from game import create_room, get_room, register_score, load_highscores
 
 app = FastAPI()
 
@@ -31,24 +31,8 @@ async def send_game_state(room_code: str):
         "type": "game_state",
         "state": room.state,
         "players": room.get_player_list(),
+        "host_id": room.host_id,
     })
-
-def get_current_clue_info(room):
-    owner_id = room.current_clue_owner_id
-    if not owner_id or owner_id not in room.players:
-        return None
-    owner = room.players[owner_id]
-    total = len(room.guessing_order)
-    current = room.current_guess_index + 1
-    return {
-        "owner_id": owner_id,
-        "owner_name": owner.name,
-        "phrase": owner.phrase,
-        "left_adjective": owner.left_adjective,
-        "right_adjective": owner.right_adjective,
-        "clue_number": current,
-        "total_clues": total,
-    }
 
 def all_active_guessed(room, room_code):
     owner_id = room.current_clue_owner_id
@@ -76,6 +60,10 @@ async def check_room(room_code: str):
     if not room:
         return {"exists": False}
     return {"exists": True, "players": room.get_player_list(), "state": room.state}
+
+@app.get("/highscores")
+async def get_highscores():
+    return load_highscores()
 
 @app.websocket("/ws/{room_code}/{player_id}")
 async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: str):
@@ -106,43 +94,66 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                     await broadcast(room_code, {"type": "player_joined", "name": name})
                 await send_game_state(room_code)
 
+            elif msg_type == "lobby_settings":
+                # Solo el anfitrión puede cambiar la configuración
+                if player_id == room.host_id:
+                    await broadcast(room_code, {
+                        "type": "lobby_settings",
+                        "num_rounds": message.get("num_rounds", 3),
+                        "mode": message.get("mode", "free"),
+                    })
+
             elif msg_type == "start_round":
-                if len(room.players) >= 2 and room.state in ["waiting", "finished"]:
-                    room.start_round()
+                if player_id == room.host_id and len(room.players) >= 2 and room.state in ["waiting", "finished"]:
+                    num_rounds = message.get("num_rounds", 3)
+                    mode = message.get("mode", "free")
+                    room.start_round(num_rounds, mode)
                     for pid, ws in connections[room_code].items():
                         if pid in room.players:
-                            player = room.players[pid]
-                            await ws.send_text(json.dumps({
-                                "type": "round_started",
-                                "target_position": player.target_position,
-                                "state": room.state,
-                                "players": room.get_player_list(),
-                            }))
+                            writing_state = room.get_player_writing_state(pid)
+                            if writing_state:
+                                await ws.send_text(json.dumps({
+                                    "type": "round_started",
+                                    "state": room.state,
+                                    "players": room.get_player_list(),
+                                    "host_id": room.host_id,
+                                    **writing_state,
+                                }))
 
             elif msg_type == "submit_clue":
                 room.submit_clue(
                     player_id,
                     message.get("phrase", ""),
-                    message.get("left_adjective", ""),
-                    message.get("right_adjective", "")
+                    message.get("left_adjective"),
+                    message.get("right_adjective"),
                 )
-                if room.all_submitted_clues():
+                player = room.players.get(player_id)
+                if player and not player.all_clues_submitted():
+                    writing_state = room.get_player_writing_state(player_id)
+                    if writing_state:
+                        await websocket.send_text(json.dumps({
+                            "type": "next_writing",
+                            "state": room.state,
+                            **writing_state,
+                        }))
+                    await broadcast(room_code, {"type": "writing_progress", "players": room.get_player_list()})
+                elif room.all_submitted_clues():
                     room.start_guessing_phase()
-                    clue_info = get_current_clue_info(room)
+                    clue_info = room.get_current_clue_info()
                     await broadcast(room_code, {
                         "type": "guessing_started",
                         "state": room.state,
                         "clue": clue_info,
                         "players": room.get_player_list(),
                         "needle_position": room.last_needle_position,
+                        "host_id": room.host_id,
                     })
                 else:
-                    await send_game_state(room_code)
+                    await broadcast(room_code, {"type": "writing_progress", "players": room.get_player_list()})
 
             elif msg_type == "move_needle":
                 position = message.get("position", 90)
                 room.last_needle_position = position
-                # Resetear el listo de todos los que ya habían confirmado
                 for pid, p in room.players.items():
                     if pid != room.current_clue_owner_id:
                         p.has_guessed = False
@@ -180,36 +191,49 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                     "players": room.get_player_list(),
                 })
                 if all_active_guessed(room, room_code):
-                    scores = room.calculate_scores_current()
-                    clue_info = get_current_clue_info(room)
+                    points_this_dial = room.calculate_points_current()
+                    clue_info = room.get_current_clue_info()
                     owner_id = room.current_clue_owner_id
-                    owner_target = room.players[owner_id].target_position
+                    clue_index = room.current_clue_owner_clue_index
+                    owner_target = room.players[owner_id].clues[clue_index].target_position
                     await broadcast(room_code, {
                         "type": "clue_reveal",
                         "target_position": owner_target,
                         "needle_position": room.last_needle_position,
-                        "scores": scores,
+                        "points_this_dial": points_this_dial,
+                        "team_score": room.team_score,
                         "clue": clue_info,
                         "players": room.get_player_list(),
+                        "host_id": room.host_id,
                     })
 
             elif msg_type == "next_clue":
-                has_more = room.next_clue()
-                if has_more:
-                    clue_info = get_current_clue_info(room)
-                    await broadcast(room_code, {
-                        "type": "guessing_started",
-                        "state": room.state,
-                        "clue": clue_info,
-                        "players": room.get_player_list(),
-                        "needle_position": room.last_needle_position,
-                    })
-                else:
-                    await broadcast(room_code, {
-                        "type": "game_finished",
-                        "state": room.state,
-                        "players": room.get_player_list(),
-                    })
+                # Solo el anfitrión puede avanzar
+                if player_id == room.host_id:
+                    has_more = room.next_clue()
+                    if has_more:
+                        clue_info = room.get_current_clue_info()
+                        await broadcast(room_code, {
+                            "type": "guessing_started",
+                            "state": room.state,
+                            "clue": clue_info,
+                            "players": room.get_player_list(),
+                            "needle_position": room.last_needle_position,
+                            "host_id": room.host_id,
+                        })
+                    else:
+                        player_names = [p.name for p in room.players.values()]
+                        total_dials = room.total_dials
+                        top = register_score(total_dials, room.team_score, player_names)
+                        await broadcast(room_code, {
+                            "type": "game_finished",
+                            "state": room.state,
+                            "players": room.get_player_list(),
+                            "team_score": room.team_score,
+                            "total_dials": total_dials,
+                            "leaderboard": top,
+                            "host_id": room.host_id,
+                        })
 
     except WebSocketDisconnect:
         if room_code in connections and player_id in connections[room_code]:

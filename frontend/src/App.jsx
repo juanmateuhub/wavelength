@@ -14,12 +14,18 @@ function App() {
   const [gameState, setGameState] = useState({})
 
   const { send, connected } = useWebSocket(roomCode, playerId, playerName, (msg) => {
-    if (msg.type === "game_state" || msg.type === "player_joined") {
+    if (msg.type === "game_state" || msg.type === "player_joined" || msg.type === "writing_progress") {
+      setGameState(prev => ({ ...prev, ...msg }))
+    }
+    if (msg.type === "lobby_settings") {
       setGameState(prev => ({ ...prev, ...msg }))
     }
     if (msg.type === "round_started") {
       setGameState(prev => ({ ...prev, ...msg }))
       setScreen("writing")
+    }
+    if (msg.type === "next_writing") {
+      setGameState(prev => ({ ...prev, ...msg }))
     }
     if (msg.type === "guessing_started") {
       setGameState(prev => ({ ...prev, ...msg, needlePosition: msg.needle_position ?? 90 }))
@@ -32,7 +38,12 @@ function App() {
       setGameState(prev => ({ ...prev, ...msg }))
     }
     if (msg.type === "clue_reveal") {
-      setGameState(prev => ({ ...prev, ...msg, finalNeedleAngle: msg.needle_position }))
+      setGameState(prev => ({
+        ...prev, ...msg,
+        finalNeedleAngle: msg.needle_position,
+        points_this_dial: msg.points_this_dial,
+        team_score: msg.team_score,
+      }))
       setScreen("reveal")
     }
     if (msg.type === "game_finished") {
@@ -40,23 +51,25 @@ function App() {
     }
   })
 
+  const handleBackToLobby = () => {
+    setGameState(prev => ({ ...prev, state: "waiting" }))
+    setScreen("lobby")
+  }
+
   const props = {
     screen, setScreen,
     roomCode, setRoomCode,
     playerName, setPlayerName,
     playerId, setPlayerId,
     gameState, setGameState,
-    send, connected
+    send, connected,
+    onBackToLobby: handleBackToLobby,
   }
 
   return (
     <div style={{
-      maxWidth: 480,
-      margin: "0 auto",
-      minHeight: "100vh",
-      padding: "0 16px 32px",
-      display: "flex",
-      flexDirection: "column",
+      maxWidth: 480, margin: "0 auto", minHeight: "100vh",
+      padding: "0 16px 32px", display: "flex", flexDirection: "column",
     }}>
       {screen === "home" && <Home {...props} />}
       {screen === "lobby" && <Lobby {...props} />}

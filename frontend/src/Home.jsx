@@ -1,5 +1,6 @@
 import { useState } from "react"
 
+//const BACKEND = "http://127.0.0.1:8000"
 const BACKEND = "https://wavelength-production.up.railway.app"
 
 export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerId }) {
@@ -51,13 +52,16 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "100vh", gap: 24 }}>
-      <div style={{ textAlign: "center", paddingTop: 20 }}>
-        <div style={{ fontSize: 56 }}>🎯</div>
-        <h1 style={{ fontSize: 36, fontWeight: 800, color: "#fff", letterSpacing: -1 }}>Wavelength</h1>
-        <p style={{ color: "#888", fontSize: 14, marginTop: 4 }}>El juego del dial</p>
+    <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", minHeight: "100vh", gap: 20 }}>
+
+      {/* Título con caja oscura */}
+      <div style={{ textAlign: "center", background: "#16213e", borderRadius: 16, padding: "24px 16px", border: "1px solid #2a2a4a" }}>
+        <div style={{ fontSize: 52 }}>🎯</div>
+        <h1 style={{ fontSize: 36, fontWeight: 900, color: "#fff", letterSpacing: -1, margin: "8px 0 4px" }}>Wavelength</h1>
+        <p style={{ color: "#888", fontSize: 14, margin: 0 }}>El juego del dial</p>
       </div>
 
+      {/* Crear sala */}
       <div style={card}>
         <label style={labelStyle}>Tu nombre</label>
         <input
@@ -68,7 +72,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
           style={inputStyle}
           autoComplete="off"
         />
-        {error && <p style={{ color: "#ff6b6b", fontSize: 13, marginTop: 8 }}>{error}</p>}
+        {error && <p style={{ color: "#ff6b6b", fontSize: 13, margin: "4px 0 0" }}>{error}</p>}
         <button onClick={handleCreate} disabled={loading} style={primaryBtn}>
           {loading ? "Creando..." : "Crear sala"}
         </button>
@@ -80,6 +84,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
         <div style={{ flex: 1, height: 1, background: "#333" }} />
       </div>
 
+      {/* Unirse a sala */}
       <div style={card}>
         <label style={labelStyle}>Código de sala</label>
         <input
@@ -95,6 +100,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
           {loading ? "Uniéndose..." : "Unirse"}
         </button>
       </div>
+
     </div>
   )
 }
@@ -106,9 +112,14 @@ const card = {
   display: "flex",
   flexDirection: "column",
   gap: 12,
-  border: "1px solid #2a2a4a"
+  border: "1px solid #2a2a4a",
+  boxSizing: "border-box",
+  width: "100%",
 }
-const labelStyle = { color: "#aaa", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }
+const labelStyle = {
+  color: "#aaa", fontSize: 13, fontWeight: 600,
+  textTransform: "uppercase", letterSpacing: 1,
+}
 const inputStyle = {
   background: "#0f3460",
   border: "2px solid #2a2a4a",
@@ -118,28 +129,15 @@ const inputStyle = {
   color: "#fff",
   outline: "none",
   width: "100%",
+  boxSizing: "border-box",
 }
 const primaryBtn = {
-  background: "#6c63ff",
-  color: "white",
-  border: "none",
-  borderRadius: 12,
-  padding: "16px",
-  fontSize: 16,
-  fontWeight: 700,
-  cursor: "pointer",
-  width: "100%",
-  marginTop: 4,
+  background: "#6c63ff", color: "white", border: "none",
+  borderRadius: 12, padding: "16px", fontSize: 16,
+  fontWeight: 700, cursor: "pointer", width: "100%",
 }
 const secondaryBtn = {
-  background: "#2ecc71",
-  color: "white",
-  border: "none",
-  borderRadius: 12,
-  padding: "16px",
-  fontSize: 16,
-  fontWeight: 700,
-  cursor: "pointer",
-  width: "100%",
-  marginTop: 4,
+  background: "#2ecc71", color: "white", border: "none",
+  borderRadius: 12, padding: "16px", fontSize: 16,
+  fontWeight: 700, cursor: "pointer", width: "100%",
 }
