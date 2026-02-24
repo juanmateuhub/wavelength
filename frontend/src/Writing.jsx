@@ -58,10 +58,9 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const allDone = waitingForNext && clueNumber >= totalClues
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24, width: "100%", boxSizing: "border-box" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24 }}>
 
-      {/* Título */}
-      <div style={{ background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a", width: "100%", boxSizing: "border-box" }}>
+      <div style={card}>
         <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", margin: 0 }}>✍️ Escribe tu pista</h2>
         <p style={{ color: "#888", fontSize: 13, margin: "4px 0 0" }}>
           Dial {clueNumber} de {totalClues} — solo tú ves tu posición
@@ -76,22 +75,15 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
         </div>
       </div>
 
-      {/* Dial — ancho completo */}
-      <div style={{ width: "100%" }}>
-        {targetPosition !== undefined && targetPosition !== null
-          ? <Dial
-              targetPosition={targetPosition}
-              showTarget={true}
-              leftAdjective={displayLeft}
-              rightAdjective={displayRight}
-            />
-          : <div style={{ color: "#888", padding: 20, textAlign: "center" }}>⏳ Cargando dial...</div>
-        }
-      </div>
+      <Dial
+        targetPosition={targetPosition}
+        showTarget={true}
+        leftAdjective={displayLeft}
+        rightAdjective={displayRight}
+      />
 
-      {/* Formulario o espera */}
       {!waitingForNext ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <label style={labelStyle}>Tu frase o palabra clave</label>
             <input
@@ -144,7 +136,7 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
           </button>
         </div>
       ) : (
-        <div style={{ background: "#16213e", borderRadius: 16, padding: 20, border: "1px solid #2a2a4a", textAlign: "center", width: "100%" }}>
+        <div style={{ ...card, textAlign: "center" }}>
           {allDone
             ? <p style={{ fontSize: 20, color: "#2ecc71", fontWeight: 700, margin: 0 }}>✅ ¡Todas las pistas enviadas!</p>
             : <p style={{ fontSize: 18, color: "#6c63ff", fontWeight: 700, margin: 0 }}>⏳ Cargando siguiente dial...</p>
@@ -156,13 +148,6 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   )
 }
 
-const labelStyle = {
-  color: "#aaa", fontSize: 12, fontWeight: 600,
-  textTransform: "uppercase", letterSpacing: 0.8,
-  display: "block", marginBottom: 6
-}
-const inputStyle = {
-  background: "#16213e", border: "2px solid #2a2a4a", borderRadius: 12,
-  padding: "14px", fontSize: 15, color: "#fff", outline: "none",
-  width: "100%", boxSizing: "border-box"
-}
+const card = { background: "#16213e", borderRadius: 14, padding: "14px 16px", border: "1px solid #2a2a4a" }
+const labelStyle = { color: "#aaa", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.8, display: "block", marginBottom: 6 }
+const inputStyle = { background: "#16213e", border: "2px solid #2a2a4a", borderRadius: 12, padding: "14px", fontSize: 15, color: "#fff", outline: "none", width: "100%", boxSizing: "border-box" }
