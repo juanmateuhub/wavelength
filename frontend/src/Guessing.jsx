@@ -1,15 +1,13 @@
 import { useState, useRef, useEffect } from "react"
 import Dial from "./Dial"
 
-export default function Guessing({ playerId, gameState, send }) {
+export default function Guessing({ playerId, gameState, send, readyPlayers }) {
   const [submitted, setSubmitted] = useState(false)
   const lastSent = useRef(90)
 
   const clue = gameState?.clue
   const players = gameState?.players || []
   const isOwner = clue?.owner_id === playerId
-  const readyCount = gameState?.ready_count || 0
-  const totalGuessers = gameState?.total_guessers || 0
   const needlePosition = gameState?.needlePosition ?? 90
   const needlePlayerId = gameState?.needlePlayerId
 
@@ -18,6 +16,15 @@ export default function Guessing({ playerId, gameState, send }) {
       setSubmitted(false)
     }
   }, [needlePlayerId, needlePosition])
+
+  // Sincronizar submitted con readyPlayers cuando llega desde el servidor
+  useEffect(() => {
+    if (readyPlayers.has(playerId)) {
+      setSubmitted(true)
+    } else {
+      setSubmitted(false)
+    }
+  }, [readyPlayers])
 
   const handleAngleChange = (newAngle) => {
     if (isOwner || submitted) return
@@ -80,26 +87,35 @@ export default function Guessing({ playerId, gameState, send }) {
         {players.map(p => {
           const isDialOwner = p.id === clue?.owner_id
           const isMe = p.id === playerId
-          const isReady = isMe ? submitted : false
+          const isReady = readyPlayers.has(p.id)
+
           return (
             <div key={p.id} style={{
               display: "flex", alignItems: "center", gap: 10,
               padding: "10px 14px", background: "#16213e", borderRadius: 10,
-              border: isDialOwner ? "1px solid #e67e22" : isReady ? "1px solid #2ecc71" : "1px solid #2a2a4a"
+              border: isDialOwner
+                ? "1px solid #e67e22"
+                : isReady
+                  ? "1px solid #2ecc71"
+                  : "1px solid #2a2a4a",
+              transition: "border-color 0.3s ease",
             }}>
-              <span style={{ fontSize: 16 }}>{isDialOwner ? "👀" : isReady ? "✅" : "⏳"}</span>
+              <span style={{ fontSize: 16 }}>
+                {isDialOwner ? "👀" : isReady ? "✅" : "⏳"}
+              </span>
               <span style={{ color: "#fff", fontWeight: 600 }}>{p.name}</span>
               {isMe && <span style={{ color: "#6c63ff", fontSize: 12, marginLeft: 4 }}>TÚ</span>}
-              {isDialOwner && <span style={{ color: "#e67e22", fontSize: 12, marginLeft: "auto" }}>su dial</span>}
-              {!isDialOwner && isReady && <span style={{ color: "#2ecc71", fontSize: 12, marginLeft: "auto" }}>listo</span>}
+              <span style={{ marginLeft: "auto", fontSize: 12 }}>
+                {isDialOwner
+                  ? <span style={{ color: "#e67e22" }}>su dial</span>
+                  : isReady
+                    ? <span style={{ color: "#2ecc71" }}>listo</span>
+                    : <span style={{ color: "#555" }}>pensando...</span>
+                }
+              </span>
             </div>
           )
         })}
-        {totalGuessers > 0 && (
-          <p style={{ color: "#555", fontSize: 13, textAlign: "center", margin: "2px 0 0" }}>
-            {readyCount} de {totalGuessers} jugadores listos
-          </p>
-        )}
       </div>
     </div>
   )

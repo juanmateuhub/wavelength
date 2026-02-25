@@ -13,6 +13,7 @@ function App() {
   const [playerId, setPlayerId] = useState(null)
   const [gameState, setGameState] = useState({})
   const [dialKey, setDialKey] = useState(0)
+  const [readyPlayers, setReadyPlayers] = useState(new Set())
 
   const { send, connected } = useWebSocket(roomCode, playerId, playerName, (msg) => {
     if (msg.type === "game_state" || msg.type === "player_joined") {
@@ -42,13 +43,21 @@ function App() {
       }))
     }
     if (msg.type === "guessing_started") {
+      setReadyPlayers(new Set())
       setGameState(prev => ({ ...prev, ...msg, needlePosition: msg.needle_position ?? 90 }))
       setScreen("guessing")
     }
     if (msg.type === "needle_moved") {
+      // Mover la aguja cancela el listo de todos menos el dueño
+      setReadyPlayers(new Set())
       setGameState(prev => ({ ...prev, needlePosition: msg.position, needlePlayerId: msg.player_id }))
     }
     if (msg.type === "player_ready") {
+      setReadyPlayers(prev => {
+        const next = new Set(prev)
+        next.add(msg.player_id)
+        return next
+      })
       setGameState(prev => ({ ...prev, ...msg }))
     }
     if (msg.type === "clue_reveal") {
@@ -78,6 +87,7 @@ function App() {
     gameState, setGameState,
     send, connected,
     onBackToLobby: handleBackToLobby,
+    readyPlayers,
   }
 
   return (
