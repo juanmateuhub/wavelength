@@ -100,7 +100,6 @@ class GameRoom:
     def remove_player(self, player_id: str):
         if player_id in self.players:
             del self.players[player_id]
-        # Si se va el anfitrión, asignar el siguiente jugador
         if self.host_id == player_id and self.players:
             self.host_id = next(iter(self.players))
 
@@ -125,7 +124,8 @@ class GameRoom:
             player.current_guess = None
             player.has_guessed = False
             for _ in range(num_rounds):
-                position = random.randint(20, 160)
+                # Rango ampliado para que el 4 pueda estar en los extremos
+                position = random.randint(5, 175)
                 if mode == "battery" and adjectives:
                     available = [p for p in adjectives if p not in used_pairs]
                     if not available:

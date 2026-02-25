@@ -11,20 +11,12 @@ export default function Guessing({ playerId, gameState, send, readyPlayers }) {
   const needlePosition = gameState?.needlePosition ?? 90
   const needlePlayerId = gameState?.needlePlayerId
 
+  // Cuando alguien mueve la aguja, resetear submitted localmente
   useEffect(() => {
     if (needlePlayerId && needlePlayerId !== playerId) {
       setSubmitted(false)
     }
   }, [needlePlayerId, needlePosition])
-
-  // Sincronizar submitted con readyPlayers cuando llega desde el servidor
-  useEffect(() => {
-    if (readyPlayers.has(playerId)) {
-      setSubmitted(true)
-    } else {
-      setSubmitted(false)
-    }
-  }, [readyPlayers])
 
   const handleAngleChange = (newAngle) => {
     if (isOwner || submitted) return
@@ -88,21 +80,14 @@ export default function Guessing({ playerId, gameState, send, readyPlayers }) {
           const isDialOwner = p.id === clue?.owner_id
           const isMe = p.id === playerId
           const isReady = readyPlayers.has(p.id)
-
           return (
             <div key={p.id} style={{
               display: "flex", alignItems: "center", gap: 10,
               padding: "10px 14px", background: "#16213e", borderRadius: 10,
-              border: isDialOwner
-                ? "1px solid #e67e22"
-                : isReady
-                  ? "1px solid #2ecc71"
-                  : "1px solid #2a2a4a",
+              border: isDialOwner ? "1px solid #e67e22" : isReady ? "1px solid #2ecc71" : "1px solid #2a2a4a",
               transition: "border-color 0.3s ease",
             }}>
-              <span style={{ fontSize: 16 }}>
-                {isDialOwner ? "👀" : isReady ? "✅" : "⏳"}
-              </span>
+              <span style={{ fontSize: 16 }}>{isDialOwner ? "👀" : isReady ? "✅" : "⏳"}</span>
               <span style={{ color: "#fff", fontWeight: 600 }}>{p.name}</span>
               {isMe && <span style={{ color: "#6c63ff", fontSize: 12, marginLeft: 4 }}>TÚ</span>}
               <span style={{ marginLeft: "auto", fontSize: 12 }}>

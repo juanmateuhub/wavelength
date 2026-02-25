@@ -48,14 +48,17 @@ function App() {
       setScreen("guessing")
     }
     if (msg.type === "needle_moved") {
-      // Mover la aguja cancela el listo de todos menos el dueño
       setReadyPlayers(new Set())
       setGameState(prev => ({ ...prev, needlePosition: msg.position, needlePlayerId: msg.player_id }))
     }
     if (msg.type === "player_ready") {
       setReadyPlayers(prev => {
         const next = new Set(prev)
-        next.add(msg.player_id)
+        if (msg.is_ready) {
+          next.add(msg.player_id)
+        } else {
+          next.delete(msg.player_id)
+        }
         return next
       })
       setGameState(prev => ({ ...prev, ...msg }))

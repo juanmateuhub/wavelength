@@ -95,7 +95,6 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                 await send_game_state(room_code)
 
             elif msg_type == "lobby_settings":
-                # Solo el anfitrión puede cambiar la configuración
                 if player_id == room.host_id:
                     await broadcast(room_code, {
                         "type": "lobby_settings",
@@ -162,7 +161,6 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                     "type": "needle_moved",
                     "position": position,
                     "player_id": player_id,
-                    "player_name": room.players[player_id].name if player_id in room.players else "",
                     "ready_count": ready_count,
                     "total_guessers": total_guessers,
                 })
@@ -174,6 +172,7 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                 await broadcast(room_code, {
                     "type": "player_ready",
                     "player_id": player_id,
+                    "is_ready": False,          # ← nuevo campo
                     "ready_count": ready_count,
                     "total_guessers": total_guessers,
                     "players": room.get_player_list(),
@@ -186,6 +185,7 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                 await broadcast(room_code, {
                     "type": "player_ready",
                     "player_id": player_id,
+                    "is_ready": True,           # ← nuevo campo
                     "ready_count": ready_count,
                     "total_guessers": total_guessers,
                     "players": room.get_player_list(),
@@ -208,7 +208,6 @@ async def websocket_endpoint(websocket: WebSocket, room_code: str, player_id: st
                     })
 
             elif msg_type == "next_clue":
-                # Solo el anfitrión puede avanzar
                 if player_id == room.host_id:
                     has_more = room.next_clue()
                     if has_more:
