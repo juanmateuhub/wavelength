@@ -1,13 +1,11 @@
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import Dial from "./Dial"
 
-export default function Writing({ playerId, gameState, setGameState, send }) {
+export default function Writing({ playerId, gameState, send }) {
   const [phrase, setPhrase] = useState("")
   const [leftAdj, setLeftAdj] = useState("")
   const [rightAdj, setRightAdj] = useState("")
   const [waitingForNext, setWaitingForNext] = useState(false)
-
-  const lastClueNumberRef = useRef(null)
 
   const targetPosition = gameState?.target_position
   const clueNumber = gameState?.clue_number || 1
@@ -20,29 +18,8 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
   const displayLeft = isBattery ? (serverLeftAdj || "") : (leftAdj || "Izq")
   const displayRight = isBattery ? (serverRightAdj || "") : (rightAdj || "Der")
 
-  useEffect(() => {
-    if (lastClueNumberRef.current === null) {
-      lastClueNumberRef.current = clueNumber
-      return
-    }
-    if (clueNumber !== lastClueNumberRef.current) {
-      lastClueNumberRef.current = clueNumber
-      setWaitingForNext(false)
-      setPhrase("")
-      setLeftAdj("")
-      setRightAdj("")
-    }
-  }, [clueNumber, targetPosition])
-
-  useEffect(() => {
-    lastClueNumberRef.current = null
-    setWaitingForNext(false)
-    setPhrase("")
-    setLeftAdj("")
-    setRightAdj("")
-  }, [gameState?.state === "writing" && gameState?.clue_number === 1 && gameState?.type === "round_started"])
-
   const canSubmit = phrase.trim() && (isBattery || (leftAdj.trim() && rightAdj.trim()))
+  const allDone = waitingForNext && clueNumber >= totalClues
 
   const handleSubmit = () => {
     if (!canSubmit || waitingForNext) return
@@ -54,8 +31,6 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
     })
     setWaitingForNext(true)
   }
-
-  const allDone = waitingForNext && clueNumber >= totalClues
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingTop: 24, width: "100%" }}>
@@ -139,7 +114,7 @@ export default function Writing({ playerId, gameState, setGameState, send }) {
         <div style={{ ...card, textAlign: "center" }}>
           {allDone
             ? <p style={{ fontSize: 20, color: "#2ecc71", fontWeight: 700, margin: 0 }}>✅ ¡Todas las pistas enviadas!</p>
-            : <p style={{ fontSize: 18, color: "#6c63ff", fontWeight: 700, margin: 0 }}>⏳ Cargando siguiente dial...</p>
+            : <p style={{ fontSize: 18, color: "#6c63ff", fontWeight: 700, margin: 0 }}>⏳ Enviando...</p>
           }
           <p style={{ color: "#888", fontSize: 14, marginTop: 8, marginBottom: 0 }}>Esperando a los demás jugadores...</p>
         </div>

@@ -12,6 +12,7 @@ function App() {
   const [playerName, setPlayerName] = useState(null)
   const [playerId, setPlayerId] = useState(null)
   const [gameState, setGameState] = useState({})
+  const [dialKey, setDialKey] = useState(0)
 
   const { send, connected } = useWebSocket(roomCode, playerId, playerName, (msg) => {
     if (msg.type === "game_state" || msg.type === "player_joined") {
@@ -24,10 +25,12 @@ function App() {
       setGameState(prev => ({ ...prev, ...msg }))
     }
     if (msg.type === "round_started") {
+      setDialKey(0)
       setGameState(prev => ({ ...prev, ...msg }))
       setScreen("writing")
     }
     if (msg.type === "next_writing") {
+      setDialKey(k => k + 1)
       setGameState(prev => ({
         ...prev,
         target_position: msg.target_position,
@@ -90,7 +93,7 @@ function App() {
     }}>
       {screen === "home" && <Home {...props} />}
       {screen === "lobby" && <Lobby {...props} />}
-      {screen === "writing" && <Writing {...props} />}
+      {screen === "writing" && <Writing key={dialKey} {...props} />}
       {screen === "guessing" && <Guessing {...props} />}
       {screen === "reveal" && <Reveal {...props} />}
     </div>
