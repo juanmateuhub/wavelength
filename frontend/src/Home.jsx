@@ -12,7 +12,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
   const generatePlayerId = () => Math.random().toString(36).substring(2, 10)
 
   const handleCreate = async () => {
-    if (!name.trim()) return setError("Escribe tu nombre")
+    if (!name.trim()) return setError("Escribe tu nombre atontao")
     setLoading(true)
     setError("")
     try {
@@ -39,7 +39,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
       const res = await fetch(`${BACKEND}/room/${code.toUpperCase()}`)
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const data = await res.json()
-      if (!data.exists) return setError("Sala no encontrada")
+      if (!data.exists) return setError("Has escrito mal el codigo de sala, espabila")
       setPlayerName(name.trim())
       setPlayerId(generatePlayerId())
       setRoomCode(code.toUpperCase())
@@ -58,7 +58,7 @@ export default function Home({ setScreen, setRoomCode, setPlayerName, setPlayerI
       <div style={{ textAlign: "center", background: "#16213e", borderRadius: 16, padding: "24px 16px", border: "1px solid #2a2a4a" }}>
         <div style={{ fontSize: 52 }}>🎯</div>
         <h1 style={{ fontSize: 36, fontWeight: 900, color: "#fff", letterSpacing: -1, margin: "8px 0 4px" }}>Wavelength</h1>
-        <p style={{ color: "#888", fontSize: 14, margin: 0 }}>El juego del dial</p>
+        <p style={{ color: "#888", fontSize: 14, margin: 0 }}>Debate con tus colegas</p>
       </div>
 
       {/* Crear sala */}

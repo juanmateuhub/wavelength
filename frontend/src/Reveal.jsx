@@ -81,7 +81,7 @@ export default function Reveal({ playerId, gameState, setScreen, send, onBackToL
   }, [])
 
   const pointColor = pointsThisDial === 4 ? "#2ecc71" : pointsThisDial === 3 ? "#f0c040" : pointsThisDial === 2 ? "#e67e22" : "#e74c3c"
-  const pointLabel = pointsThisDial === 4 ? "🎯 ¡Perfecto!" : pointsThisDial === 3 ? "👏 ¡Muy cerca!" : pointsThisDial === 2 ? "👍 Bien" : "😬 Sigue intentándolo"
+  const pointLabel = pointsThisDial === 4 ? "🎯 ¡Lo has clavao!" : pointsThisDial === 3 ? "👏 Cerca cerca..." : pointsThisDial === 2 ? "Pochete" : "Malisimo"
 
   return (
     <div style={{
@@ -192,10 +192,10 @@ export default function Reveal({ playerId, gameState, setScreen, send, onBackToL
               </div>
               <p style={{ color: "#888", fontSize: 13, marginTop: 10 }}>{players.map(p => p.name).join(", ")}</p>
               <p style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
-                {teamScore === maxScore ? "🎯 ¡Puntuación perfecta!" :
-                 teamScore >= maxScore * 0.8 ? "🔥 ¡Increíble!" :
-                 teamScore >= maxScore * 0.6 ? "👏 ¡Muy bien!" :
-                 teamScore >= maxScore * 0.4 ? "👍 Nada mal" : "💪 ¡A practicar!"}
+                {teamScore === maxScore ? "🎯 ¡Sacadon cabron!" :
+                 teamScore >= maxScore * 0.8 ? "🔥 ¡Sacadita!" :
+                 teamScore >= maxScore * 0.6 ? "👏 ¡Bien tt bien!" :
+                 teamScore >= maxScore * 0.4 ? "Bro" : "Teneis que practicar"}
               </p>
             </div>
           </FadeIn>
@@ -230,7 +230,7 @@ export default function Reveal({ playerId, gameState, setScreen, send, onBackToL
           )}
 
           <FadeIn delay={800}>
-            <button onClick={onBackToLobby} style={btnStyle("#6c63ff")}>Jugar otra vez 🔄</button>
+            <button onClick={onBackToLobby} style={btnStyle("#6c63ff")}>Una mas va, una mas🔄</button>
           </FadeIn>
           <FadeIn delay={900}>
             <button onClick={() => setScreen("home")} style={btnStyle("#2a2a4a")}>Volver al inicio</button>
